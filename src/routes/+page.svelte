@@ -1,8 +1,8 @@
 <script lang="ts">
-	import CurrencyBox from '$lib/components/CurrencyBox.svelte';
-	import CountdownWidget from '$lib/components/CountdownWidget.svelte';
-	import DateTime from '$lib/components/DateTime.svelte';
-	import TopSites from '$lib/components/TopSites.svelte';
+	import CurrencyBox from '$lib/components/currency-box.svelte';
+	import CountdownWidget from '$lib/components/countdown-widget.svelte';
+	import DateTime from '$lib/components/date-time.svelte';
+	import TopSites from '$lib/components/top-sites.svelte';
 </script>
 
 <svelte:head>
