@@ -11,18 +11,7 @@
 
   const STORAGE_KEY = 'startpage.topSites';
 
-  const defaultSites: ReadonlyArray<TopSite> = [
-    { title: 'Svelte', url: 'https://svelte.dev' },
-    { title: 'GitHub', url: 'https://github.com' },
-    { title: 'MDN', url: 'https://developer.mozilla.org' },
-    { title: 'OpenAI', url: 'https://openai.com' }
-  ];
-
-  function createDefaultSites(): TopSite[] {
-    return defaultSites.map((site) => ({ ...site }));
-  }
-
-  let sites = $state<TopSite[]>(createDefaultSites());
+  let sites = $state<TopSite[]>([]);
   let showEditor = $state(false);
   let draftTitle = $state('');
   let draftUrl = $state('https://');
@@ -136,10 +125,9 @@
   }
 
   function clearAll() {
-    const reset = createDefaultSites();
-    sites = reset;
-    persist(reset);
-    feedback = 'Reset to defaults';
+    sites = [];
+    persist([]);
+    feedback = 'Cleared all links';
   }
 
   function getFaviconUrl(site: TopSite): string {
@@ -255,7 +243,7 @@
           onclick={clearAll}
           class="rounded-full border border-destructive/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-destructive transition hover:border-destructive"
         >
-          Reset Defaults
+          Clear All
         </button>
       </div>
 

@@ -19,20 +19,7 @@
     return Math.random().toString(36).slice(2);
   }
 
-  function createDefaultEvents(): CountdownEvent[] {
-    const occursAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-    return [
-      {
-        id: createId(),
-        title: 'Next focus block',
-        occursAt,
-        notes: 'Adjust in the editor below to match your schedule.'
-      }
-    ];
-  }
-
-  let events = $state<CountdownEvent[]>(createDefaultEvents());
+  let events = $state<CountdownEvent[]>([]);
   let now = $state(Date.now());
   let showEditor = $state(false);
   let draftTitle = $state('');
@@ -209,13 +196,6 @@
     feedback = 'Countdown removed';
   }
 
-  function resetDefaults() {
-    const defaults = createDefaultEvents();
-    events = defaults;
-    persist(defaults);
-    feedback = 'Countdown reset';
-  }
-
   function pad(value: number): string {
     return value.toString().padStart(2, '0');
   }
@@ -259,8 +239,8 @@
     </div>
   </header>
 
-  {#if nextEvent && countdown}
-    <article class="rounded-2xl bg-linear-to-br from-primary/25 to-secondary/15 p-6 text-center shadow-inner">
+   {#if nextEvent && countdown}
+     <article class="rounded-2xl bg-linear-to-br from-primary/25 to-secondary/15 p-6 text-center shadow-inner">
       <h3 class="text-lg font-semibold text-foreground">{nextEvent.title}</h3>
       <p class="text-sm text-muted-foreground">{displayFormatter.format(new Date(nextEvent.occursAt))}</p>
 
@@ -295,7 +275,7 @@
 
   {#if showEditor}
     <form class="mt-2 flex flex-col gap-4 rounded-lg bg-popover/40 p-4" onsubmit={handleAdd}>
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-4">
         <label class="flex flex-col gap-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">
           <span>Title</span>
           <input
@@ -343,13 +323,6 @@
           class="rounded-full border border-border/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-foreground transition hover:border-border"
         >
           Clear
-        </button>
-        <button
-          type="button"
-          onclick={resetDefaults}
-          class="rounded-full border border-destructive/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-destructive transition hover:border-destructive"
-        >
-          Reset Defaults
         </button>
       </div>
 
