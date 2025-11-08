@@ -6,7 +6,7 @@
 - Tests are not configured; after adding Vitest use `bunx vitest path/to.test.ts` for single cases.
 - For file-scoped diagnostics, run `bunx svelte-check src/routes/+page.svelte`.
 - No Cursor or Copilot rule files exist as of 2025-11-08.
-- Formatting: keep Svelte/TS defaults (tab indents, LF newlines, trailing semicolons).
+- Formatting: keep Svelte/TS defaults (space indents, LF newlines, trailing semicolons, use `.editorconfig`).
 - Prefer single quotes in TS/JS, double quotes in JSON, HTML attributes follow DOM casing.
 - Order imports: external packages, `$lib` aliases, then relative paths with blank separations.
 - Maintain ES module syntax; default to named exports over namespace objects.
