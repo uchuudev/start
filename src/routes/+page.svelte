@@ -1,8 +1,13 @@
 <script lang="ts">
+	import type { PageData } from './$types';
+
 	import CurrencyBox from '$lib/components/currency-box.svelte';
 	import CountdownWidget from '$lib/components/countdown-widget.svelte';
 	import DateTime from '$lib/components/date-time.svelte';
 	import TopSites from '$lib/components/top-sites.svelte';
+
+	const props = $props<{ data: PageData }>();
+	const data = $derived(props.data);
 </script>
 
 <svelte:head>
@@ -34,7 +39,7 @@
 		<div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
 			<TopSites />
 	    <div class="flex flex-col gap-6">
-				<CurrencyBox />
+				<CurrencyBox rates={data.rates} />
 				<CountdownWidget />
 			</div>
 		</div>
