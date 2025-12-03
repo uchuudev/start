@@ -1,42 +1,49 @@
 <script lang="ts">
-  import { currencyBoxConfig, type CurrencyBoxRates } from './currency-box.config';
+	import { currencyBoxConfig, type CurrencyBoxRates } from './currency-box.config';
 
-  const props = $props<{ rates?: CurrencyBoxRates | null }>();
+	const props = $props<{ rates?: CurrencyBoxRates | null }>();
 
-  const placeholderRates: CurrencyBoxRates = {
-    base: currencyBoxConfig.base,
-    conversions: currencyBoxConfig.conversions.map((conversion) => ({
-      ...conversion,
-      amount: '--',
-      label: `Awaiting ${conversion.currency} rate`
-    })),
-    updatedAt: 'Awaiting latest rates'
-  };
+	const placeholderRates: CurrencyBoxRates = {
+		base: currencyBoxConfig.base,
+		conversions: currencyBoxConfig.conversions.map((conversion) => ({
+			...conversion,
+			amount: '--',
+			label: `Awaiting ${conversion.currency} rate`
+		})),
+		updatedAt: 'Awaiting rates'
+	};
 
-  const rates = $derived<CurrencyBoxRates>(props.rates ?? placeholderRates);
+	const rates = $derived<CurrencyBoxRates>(props.rates ?? placeholderRates);
 </script>
 
-<section class="flex flex-col gap-4 rounded-xl bg-card/80 p-6 text-card-foreground shadow-lg backdrop-blur">
-  <header class="flex items-center justify-between text-sm uppercase tracking-[0.35em] text-muted-foreground">
-    <span>FX Snapshot</span>
-  </header>
+<section class="rounded-2xl border border-border/50 bg-card p-5">
+	<header class="mb-4 flex items-center justify-between">
+		<h2 class="text-xs font-medium uppercase tracking-wider text-muted-foreground">FX Rates</h2>
+		<span class="rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+			{rates.updatedAt}
+		</span>
+	</header>
 
-  <div class="flex items-baseline justify-between gap-3">
-    <p class="text-3xl font-semibold text-foreground">{rates.base.symbol}{rates.base.amount}</p>
-    <span class="rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
-      <time aria-label="Rates update time">{rates.updatedAt}</time>
-    </span>
-  </div>
+	<div class="mb-4">
+		<p class="text-2xl font-semibold tabular-nums text-foreground">
+			{rates.base.symbol}{rates.base.amount}
+			<span class="text-sm font-normal text-muted-foreground">{rates.base.currency}</span>
+		</p>
+	</div>
 
-  <ul class="flex flex-col gap-3 text-sm">
-    {#each rates.conversions as conversion (conversion.currency)}
-      <li class="flex items-center justify-between rounded-lg bg-card/70 px-4 py-3">
-        <div class="flex flex-col">
-          <span class="text-lg font-semibold text-foreground">{conversion.symbol}{conversion.amount}</span>
-          <span class="text-xs uppercase tracking-[0.25em] text-muted-foreground">{conversion.currency}</span>
-        </div>
-        <span class="text-xs text-muted-foreground">{conversion.label}</span>
-      </li>
-    {/each}
-  </ul>
+	<ul class="space-y-2">
+		{#each rates.conversions as conversion (conversion.currency)}
+			<li class="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2.5">
+				<div>
+					<p class="text-base font-semibold tabular-nums text-foreground">
+						{conversion.symbol}{conversion.amount}
+					</p>
+					<p class="text-[10px] uppercase tracking-wide text-muted-foreground">
+						{conversion.currency}
+					</p>
+				</div>
+				<span class="text-xs text-muted-foreground">{conversion.label}</span>
+			</li>
+		{/each}
+	</ul>
 </section>
