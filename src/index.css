@@ -1,0 +1,123 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.965 0.006 145);
+  --foreground: oklch(0.145 0.005 145);
+  --card: oklch(0.995 0.002 145);
+  --card-foreground: oklch(0.145 0.005 145);
+  --popover: oklch(0.995 0.002 145);
+  --popover-foreground: oklch(0.145 0.005 145);
+  --primary: oklch(0.47 0.145 155);
+  --primary-foreground: oklch(0.985 0.004 145);
+  --secondary: oklch(0.90 0.018 95);
+  --secondary-foreground: oklch(0.18 0.015 145);
+  --muted: oklch(0.925 0.006 145);
+  --muted-foreground: oklch(0.43 0.012 145);
+  --accent: oklch(0.69 0.17 38);
+  --accent-foreground: oklch(0.145 0.005 145);
+  --destructive: oklch(0.58 0.19 24);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.82 0.009 145);
+  --input: oklch(0.87 0.006 145);
+  --ring: oklch(0.47 0.145 155);
+  --chart-1: oklch(0.47 0.145 155);
+  --chart-2: oklch(0.58 0.17 255);
+  --chart-3: oklch(0.62 0.18 24);
+  --chart-4: oklch(0.69 0.17 78);
+  --chart-5: oklch(0.52 0.12 315);
+  --radius: 0.5rem;
+  --font-sans: "Archivo", "Aptos", sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Code", monospace;
+}
+
+.dark {
+  --background: oklch(0.145 0.006 145);
+  --foreground: oklch(0.94 0.006 145);
+  --card: oklch(0.19 0.009 145);
+  --card-foreground: oklch(0.94 0.006 145);
+  --popover: oklch(0.18 0.009 145);
+  --popover-foreground: oklch(0.94 0.006 145);
+  --primary: oklch(0.68 0.16 155);
+  --primary-foreground: oklch(0.12 0.006 145);
+  --secondary: oklch(0.27 0.018 95);
+  --secondary-foreground: oklch(0.90 0.008 145);
+  --muted: oklch(0.25 0.006 145);
+  --muted-foreground: oklch(0.70 0.012 145);
+  --accent: oklch(0.75 0.17 78);
+  --accent-foreground: oklch(0.12 0.006 145);
+  --destructive: oklch(0.64 0.19 24);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.34 0.012 145);
+  --input: oklch(0.30 0.012 145);
+  --ring: oklch(0.68 0.16 155);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+}
+
+@layer utilities {
+  .dashboard-grid {
+    background-image:
+      linear-gradient(to right, oklch(0.78 0.01 145 / 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.78 0.01 145 / 0.35) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .panel-shadow {
+    box-shadow: 0 24px 60px -34px oklch(0.16 0.02 145 / 0.42);
+  }
+}
