@@ -21,7 +21,7 @@ const getTemperature = async (): Promise<number | undefined> => {
 
 const getDisk = async (): Promise<SystemSection['disk']> => {
   try {
-    const { stdout } = await execFileAsync('df', ['-kP', '/']);
+    const { stdout } = await execFileAsync('df', ['-kP', '/'], { timeout: 3_000 });
     const [, row] = stdout.trim().split('\n');
     const parts = row?.replace(/\s+/g, ' ').split(' ');
 

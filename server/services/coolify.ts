@@ -1,6 +1,6 @@
 import type { CoolifyApp, CoolifySection } from '../../src/types/dashboard';
 
-import { cached, ensureOk, errorMeta, getEnv, missingConfig, readyMeta, withTimeout } from './shared';
+import { cached, ensureOk, errorMeta, getEnv, getEnvNumber, missingConfig, readyMeta, withTimeout } from './shared';
 
 const normalizeBaseUrl = (raw: string): string => {
   const trimmed = raw.replace(/\/+$/, '');
@@ -66,18 +66,19 @@ const loadCoolify = async (): Promise<CoolifySection> => {
     url.searchParams.set('tag', tag);
   }
 
-  const response = await withTimeout((signal) =>
-    fetch(url, {
+  const timeoutMs = getEnvNumber('COOLIFY_TIMEOUT_MS', 5_000);
+  const payload = await withTimeout(async (signal) => {
+    const response = await fetch(url, {
       signal,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json'
       }
-    })
-  );
-  await ensureOk(response, 'Coolify applications request');
+    });
+    await ensureOk(response, 'Coolify applications request');
 
-  const payload = (await response.json()) as unknown;
+    return (await response.json()) as unknown;
+  }, timeoutMs);
   const collection = Array.isArray(payload)
     ? payload
     : Array.isArray((payload as { data?: unknown }).data)
