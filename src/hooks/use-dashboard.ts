@@ -1,40 +1,92 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { DashboardPayload } from '@/types/dashboard';
+import type {
+  CoolifySection,
+  CurrencySection,
+  DashboardPayload,
+  FastmailSection,
+  SystemSection,
+  WanikaniSection
+} from '@/types/dashboard';
+
+type DashboardData = Partial<Omit<DashboardPayload, 'generatedAt'>> & {
+  generatedAt: string | null;
+};
+
+type SectionKey = 'currency' | 'system' | 'coolify' | 'fastmail' | 'wanikani';
+
+type SectionPayloads = {
+  currency: CurrencySection;
+  system: SystemSection;
+  coolify: CoolifySection;
+  fastmail: FastmailSection;
+  wanikani: WanikaniSection;
+};
 
 type DashboardState = {
-  data: DashboardPayload | null;
+  data: DashboardData;
   error: string | null;
   loading: boolean;
   refresh: () => Promise<void>;
 };
 
+const sections = ['currency', 'system', 'coolify', 'fastmail', 'wanikani'] as const satisfies readonly SectionKey[];
+
+const fetchSection = async <T extends SectionKey>(section: T): Promise<SectionPayloads[T]> => {
+  const response = await fetch(`/api/dashboard/${section}`, {
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`${section} request failed with ${response.status}`);
+  }
+
+  return (await response.json()) as SectionPayloads[T];
+};
+
 export const useDashboard = (): DashboardState => {
-  const [data, setData] = useState<DashboardPayload | null>(null);
+  const [data, setData] = useState<DashboardData>({ generatedAt: null });
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(0);
+  const refreshId = useRef(0);
 
   const refresh = useCallback(async (): Promise<void> => {
-    setLoading(true);
+    const currentRefresh = refreshId.current + 1;
+    refreshId.current = currentRefresh;
+    setPending(sections.length);
+    setError(null);
 
-    try {
-      const response = await fetch('/api/dashboard', {
-        headers: {
-          Accept: 'application/json'
+    await Promise.all(
+      sections.map(async (section) => {
+        try {
+          const payload = await fetchSection(section);
+          if (refreshId.current !== currentRefresh) {
+            return;
+          }
+
+          setData((current) => ({
+            ...current,
+            generatedAt: new Date().toISOString(),
+            [section]: payload
+          }));
+        } catch (nextError) {
+          if (refreshId.current !== currentRefresh) {
+            return;
+          }
+
+          setError((current) => {
+            const message = nextError instanceof Error ? nextError.message : `${section} request failed`;
+            return current ? `${current}; ${message}` : message;
+          });
+        } finally {
+          if (refreshId.current === currentRefresh) {
+            setPending((current) => Math.max(0, current - 1));
+          }
         }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Dashboard request failed with ${response.status}`);
-      }
-
-      setData((await response.json()) as DashboardPayload);
-      setError(null);
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : 'Dashboard request failed');
-    } finally {
-      setLoading(false);
-    }
+      })
+    );
   }, []);
 
   useEffect(() => {
@@ -49,7 +101,7 @@ export const useDashboard = (): DashboardState => {
   return {
     data,
     error,
-    loading,
+    loading: pending > 0,
     refresh
   };
 };

@@ -113,3 +113,20 @@ export const getDashboard = async (): Promise<DashboardPayload> => {
     wanikani
   };
 };
+
+export const getDashboardSection = async (section: string): Promise<unknown> => {
+  switch (section) {
+    case 'currency':
+      return getCurrency();
+    case 'system':
+      return getSystem();
+    case 'coolify':
+      return getCoolify();
+    case 'fastmail':
+      return getFastmail();
+    case 'wanikani':
+      return getWanikani();
+    default:
+      return undefined;
+  }
+};

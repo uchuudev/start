@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { getDashboard } from './api';
+import { getDashboard, getDashboardSection } from './api';
 import { setSecurityHeaders } from './headers';
 
 const sendJson = (response: ServerResponse, statusCode: number, payload: unknown): void => {
@@ -26,6 +26,25 @@ export const handleApiRequest = async (request: IncomingMessage, response: Serve
       console.error(error);
       sendJson(response, 500, {
         error: 'Dashboard request failed'
+      });
+    }
+    return;
+  }
+
+  const sectionMatch = url.pathname.match(/^\/(?:api\/)?dashboard\/([^/]+)$/);
+  if (sectionMatch) {
+    try {
+      const section = await getDashboardSection(sectionMatch[1] ?? '');
+      if (!section) {
+        sendJson(response, 404, { error: 'Dashboard section not found' });
+        return;
+      }
+
+      sendJson(response, 200, section);
+    } catch (error) {
+      console.error(error);
+      sendJson(response, 500, {
+        error: 'Dashboard section request failed'
       });
     }
     return;
