@@ -36,12 +36,20 @@ export const withTimeout = async <T>(
   timeoutMs = 8_000
 ): Promise<T> => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => {
+      controller.abort();
+      reject(new Error(`Request timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
 
   try {
-    return await run(controller.signal);
+    return await Promise.race([run(controller.signal), deadline]);
   } finally {
-    clearTimeout(timeout);
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 };
 
