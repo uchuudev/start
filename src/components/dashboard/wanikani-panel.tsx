@@ -1,7 +1,4 @@
-import { BookOpenText } from 'lucide-react';
-
 import { PanelMessage } from '@/components/dashboard/panel-message';
-import { StatusPill } from '@/components/dashboard/status-pill';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { formatRelative } from '@/lib/format';
@@ -15,16 +12,12 @@ export const WanikaniPanel = ({ wanikani }: WanikaniPanelProps): React.JSX.Eleme
   const maxUpcoming = Math.max(...(wanikani?.upcomingReviews.map((item) => item.count) ?? [0]), 1);
 
   return (
-    <Card>
+    <Card className="dashboard-tile">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>WaniKani</CardTitle>
             <CardDescription>Reviews due now and next waves</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            {wanikani ? <StatusPill status={wanikani.status} /> : null}
-            <BookOpenText className="h-5 w-5 text-primary" aria-hidden="true" />
           </div>
         </div>
       </CardHeader>

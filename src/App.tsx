@@ -3,6 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { CoolifyPanel } from '@/components/dashboard/coolify-panel';
 import { CurrencyPanel } from '@/components/dashboard/currency-panel';
 import { DateTimePanel } from '@/components/dashboard/date-time-panel';
+import { NextEventsPanel } from '@/components/dashboard/next-events-panel';
 import { SystemPanel } from '@/components/dashboard/system-panel';
 import { WanikaniPanel } from '@/components/dashboard/wanikani-panel';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,9 @@ export default function App(): React.JSX.Element {
           </header>
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-4">
-          <DateTimePanel fastmail={data.fastmail ?? null} />
+        <div className="dashboard-masonry">
+          <DateTimePanel />
+          <NextEventsPanel fastmail={data.fastmail ?? null} />
           <CurrencyPanel currency={data.currency ?? null} />
           <WanikaniPanel wanikani={data.wanikani ?? null} />
           <SystemPanel system={data.system ?? null} />

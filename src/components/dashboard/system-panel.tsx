@@ -1,6 +1,5 @@
 import { Cpu, HardDrive, MemoryStick, Thermometer } from 'lucide-react';
 
-import { StatusPill } from '@/components/dashboard/status-pill';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { formatBytes, formatDuration, formatNumber } from '@/lib/format';
@@ -11,14 +10,13 @@ type SystemPanelProps = {
 };
 
 export const SystemPanel = ({ system }: SystemPanelProps): React.JSX.Element => (
-  <Card>
+  <Card className="dashboard-tile">
     <CardHeader>
       <div className="flex items-start justify-between gap-4">
         <div>
           <CardTitle>Server</CardTitle>
           <CardDescription>{system ? `${system.hostname} · ${system.platform}/${system.arch}` : 'Local host'}</CardDescription>
         </div>
-        {system ? <StatusPill status={system.status} /> : null}
       </div>
     </CardHeader>
     <CardContent className="space-y-4">

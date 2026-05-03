@@ -120,4 +120,17 @@
   .panel-shadow {
     box-shadow: 0 24px 60px -34px oklch(0.16 0.02 145 / 0.42);
   }
+
+  .dashboard-masonry {
+    column-gap: 1rem;
+    column-width: 26rem;
+  }
+
+  .dashboard-tile {
+    break-inside: avoid;
+    display: inline-block;
+    margin-bottom: 1rem;
+    vertical-align: top;
+    width: 100%;
+  }
 }

@@ -1,7 +1,6 @@
 import { ExternalLink, ServerCog } from 'lucide-react';
 
 import { PanelMessage } from '@/components/dashboard/panel-message';
-import { StatusPill } from '@/components/dashboard/status-pill';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CoolifyApp, CoolifySection } from '@/types/dashboard';
@@ -55,14 +54,13 @@ const AppRow = ({ app }: { app: CoolifyApp }): React.JSX.Element => {
 };
 
 export const CoolifyPanel = ({ coolify }: CoolifyPanelProps): React.JSX.Element => (
-  <Card className="lg:col-span-2">
+  <Card className="dashboard-tile">
     <CardHeader>
       <div className="flex items-start justify-between gap-4">
         <div>
           <CardTitle>Coolify</CardTitle>
           <CardDescription>Applications and deployment state</CardDescription>
         </div>
-        {coolify ? <StatusPill status={coolify.status} /> : null}
       </div>
     </CardHeader>
     <CardContent className="space-y-3">
