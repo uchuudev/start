@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+node_modules
+dist
+build
+.output
+.vercel
+.netlify
+.wrangler
+Dockerfile
+README.md
