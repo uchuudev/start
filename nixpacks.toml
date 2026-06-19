@@ -1,0 +1,15 @@
+[phases.setup]
+nixpkgsArchive = '51ad838b03a05b1de6f9f2a0fffecee64a9788ee'
+nixPkgs = ['bun']
+
+[phases.install]
+cmds = ['bun install --frozen-lockfile']
+cacheDirectories = ['/root/.bun/install/cache']
+
+[phases.build]
+dependsOn = ['install']
+cmds = ['bun run build']
+cacheDirectories = []
+
+[start]
+cmd = 'bun run start'
