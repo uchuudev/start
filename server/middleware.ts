@@ -3,6 +3,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { getDashboard, getDashboardSection } from './api';
 import { setSecurityHeaders } from './headers';
 
+const getRequestTimeZone = (request: IncomingMessage): string | undefined => {
+  const value = request.headers['x-time-zone'];
+  return Array.isArray(value) ? value[0] : value;
+};
+
 const sendJson = (response: ServerResponse, statusCode: number, payload: unknown): void => {
   response.statusCode = statusCode;
   setSecurityHeaders(response);
@@ -21,7 +26,7 @@ export const handleApiRequest = async (request: IncomingMessage, response: Serve
 
   if (url.pathname === '/dashboard' || url.pathname === '/api/dashboard') {
     try {
-      sendJson(response, 200, await getDashboard());
+      sendJson(response, 200, await getDashboard(getRequestTimeZone(request)));
     } catch (error) {
       console.error(error);
       sendJson(response, 500, {
@@ -34,7 +39,7 @@ export const handleApiRequest = async (request: IncomingMessage, response: Serve
   const sectionMatch = url.pathname.match(/^\/(?:api\/)?dashboard\/([^/]+)$/);
   if (sectionMatch) {
     try {
-      const section = await getDashboardSection(sectionMatch[1] ?? '');
+      const section = await getDashboardSection(sectionMatch[1] ?? '', getRequestTimeZone(request));
       if (!section) {
         sendJson(response, 404, { error: 'Dashboard section not found' });
         return;

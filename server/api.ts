@@ -95,12 +95,12 @@ const unavailableWanikani = (): WanikaniSection => ({
   upcomingReviews: []
 });
 
-export const getDashboard = async (): Promise<DashboardPayload> => {
+export const getDashboard = async (timeZone?: string): Promise<DashboardPayload> => {
   const [currency, system, coolify, fastmail, wanikani] = await Promise.all([
     sectionTimeout('Currency', getCurrency(), unavailableCurrency()),
     sectionTimeout('System', getSystem(), unavailableSystem()),
     sectionTimeout('Coolify', getCoolify(), unavailableCoolify()),
-    sectionTimeout('Fastmail', getFastmail(), unavailableFastmail()),
+    sectionTimeout('Fastmail', getFastmail(timeZone), unavailableFastmail()),
     sectionTimeout('WaniKani', getWanikani(), unavailableWanikani())
   ]);
 
@@ -114,7 +114,7 @@ export const getDashboard = async (): Promise<DashboardPayload> => {
   };
 };
 
-export const getDashboardSection = async (section: string): Promise<unknown> => {
+export const getDashboardSection = async (section: string, timeZone?: string): Promise<unknown> => {
   switch (section) {
     case 'currency':
       return getCurrency();
@@ -123,7 +123,7 @@ export const getDashboardSection = async (section: string): Promise<unknown> => 
     case 'coolify':
       return getCoolify();
     case 'fastmail':
-      return getFastmail();
+      return getFastmail(timeZone);
     case 'wanikani':
       return getWanikani();
     default:

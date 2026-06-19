@@ -32,10 +32,20 @@ type DashboardState = {
 
 const sections = ['currency', 'system', 'coolify', 'fastmail', 'wanikani'] as const satisfies readonly SectionKey[];
 
+const userTimeZone = (): string | undefined => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return undefined;
+  }
+};
+
 const fetchSection = async <T extends SectionKey>(section: T): Promise<SectionPayloads[T]> => {
+  const timeZone = userTimeZone();
   const response = await fetch(`/api/dashboard/${section}`, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      ...(timeZone ? { 'X-Time-Zone': timeZone } : {})
     }
   });
 

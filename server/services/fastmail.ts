@@ -17,6 +17,70 @@ const getCalendarUrls = (): string[] => {
     .filter(Boolean);
 };
 
+const getServerTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+const isValidTimeZone = (timeZone: string | undefined): timeZone is string => {
+  if (!timeZone) {
+    return false;
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-GB', { timeZone }).format(new Date());
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const normalizeTimeZone = (timeZone: string | undefined): string => (isValidTimeZone(timeZone) ? timeZone : getServerTimeZone());
+
+const getTimeZoneOffsetMs = (timeZone: string, date: Date): number => {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes): number =>
+    Number.parseInt(parts.find((part) => part.type === type)?.value ?? '0', 10);
+  const zonedAsUtc = Date.UTC(value('year'), value('month') - 1, value('day'), value('hour'), value('minute'), value('second'));
+
+  return zonedAsUtc - date.getTime();
+};
+
+const zonedTimeToDate = (time: ICAL.Time, timeZone: string): Date => {
+  let utcTime = Date.UTC(time.year, time.month - 1, time.day, time.hour, time.minute, time.second);
+  const offset = getTimeZoneOffsetMs(timeZone, new Date(utcTime));
+  utcTime -= offset;
+
+  const nextOffset = getTimeZoneOffsetMs(timeZone, new Date(utcTime));
+  if (nextOffset !== offset) {
+    utcTime += offset - nextOffset;
+  }
+
+  return new Date(utcTime);
+};
+
+const getPropertyTimeZone = (event: ICAL.Event, propertyName: 'dtstart' | 'dtend', fallbackTimeZone: string): string => {
+  const property = event.component.getFirstProperty(propertyName);
+  const timeZoneParameter = property?.getParameter('tzid');
+
+  return typeof timeZoneParameter === 'string' && isValidTimeZone(timeZoneParameter) ? timeZoneParameter : fallbackTimeZone;
+};
+
+const getEventTime = (event: ICAL.Event, propertyName: 'dtstart' | 'dtend', fallbackTimeZone: string): Date | undefined => {
+  const time = propertyName === 'dtstart' ? event.startDate : event.endDate;
+  if (!time) {
+    return undefined;
+  }
+
+  return time.zone === ICAL.Timezone.localTimezone ? zonedTimeToDate(time, getPropertyTimeZone(event, propertyName, fallbackTimeZone)) : time.toJSDate();
+};
+
 const calendarReportBody = (start: Date, end: Date): string => {
   const format = (date: Date): string => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 
@@ -57,17 +121,17 @@ const findValuesByLocalName = (value: unknown, localName: string, results: strin
   return results;
 };
 
-const getEventEnd = (event: ICAL.Event, start: Date): string | undefined => {
+const getEventEnd = (event: ICAL.Event, start: Date, timeZone: string): string | undefined => {
   const duration = event.duration?.toSeconds() ?? 0;
   if (duration > 0) {
     return new Date(start.getTime() + duration * 1000).toISOString();
   }
 
-  const end = event.endDate?.toJSDate();
+  const end = getEventTime(event, 'dtend', timeZone);
   return end ? end.toISOString() : undefined;
 };
 
-const eventsFromIcs = (ics: string, rangeStart: Date, rangeEnd: Date): CalendarEvent[] => {
+const eventsFromIcs = (ics: string, rangeStart: Date, rangeEnd: Date, timeZone: string): CalendarEvent[] => {
   const component = new ICAL.Component(ICAL.parse(ics));
   const events = component.getAllSubcomponents('vevent');
   const output: CalendarEvent[] = [];
@@ -82,9 +146,10 @@ const eventsFromIcs = (ics: string, rangeStart: Date, rangeEnd: Date): CalendarE
       const iterator = event.iterator();
       let next = iterator.next();
       let count = 0;
+      const eventTimeZone = getPropertyTimeZone(event, 'dtstart', timeZone);
 
       while (next && count < 200) {
-        const startsAt = next.toJSDate();
+        const startsAt = next.zone === ICAL.Timezone.localTimezone ? zonedTimeToDate(next, eventTimeZone) : next.toJSDate();
         if (startsAt > rangeEnd) {
           break;
         }
@@ -94,7 +159,7 @@ const eventsFromIcs = (ics: string, rangeStart: Date, rangeEnd: Date): CalendarE
             id: `${event.uid}-${startsAt.toISOString()}`,
             title,
             startsAt: startsAt.toISOString(),
-            endsAt: getEventEnd(event, startsAt),
+            endsAt: getEventEnd(event, startsAt, timeZone),
             location,
             allDay: isAllDay
           });
@@ -107,8 +172,8 @@ const eventsFromIcs = (ics: string, rangeStart: Date, rangeEnd: Date): CalendarE
       continue;
     }
 
-    const startsAt = event.startDate?.toJSDate();
-    const endsAt = event.endDate?.toJSDate();
+    const startsAt = getEventTime(event, 'dtstart', timeZone);
+    const endsAt = getEventTime(event, 'dtend', timeZone);
     if (!startsAt || startsAt > rangeEnd || (endsAt && endsAt < rangeStart)) {
       continue;
     }
@@ -131,7 +196,8 @@ const fetchCalendarUrl = async (
   username: string,
   password: string,
   start: Date,
-  end: Date
+  end: Date,
+  timeZone: string
 ): Promise<CalendarEvent[]> => {
   const response = await withTimeout((signal) =>
     fetch(url, {
@@ -158,14 +224,14 @@ const fetchCalendarUrl = async (
 
   return findValuesByLocalName(parsed, 'calendar-data').flatMap((ics) => {
     try {
-      return eventsFromIcs(ics, start, end);
+      return eventsFromIcs(ics, start, end, timeZone);
     } catch {
       return [];
     }
   });
 };
 
-const loadCalendar = async (): Promise<FastmailSection['calendar']> => {
+const loadCalendar = async (timeZone: string): Promise<FastmailSection['calendar']> => {
   const username = getEnv('FASTMAIL_CALDAV_USERNAME') ?? getEnv('FASTMAIL_EMAIL');
   const password = getEnv('FASTMAIL_CALDAV_PASSWORD');
   const urls = getCalendarUrls();
@@ -183,7 +249,7 @@ const loadCalendar = async (): Promise<FastmailSection['calendar']> => {
   const end = new Date(now.getTime() + days * 86_400_000);
 
   const events = (
-    await Promise.all(urls.map((url) => fetchCalendarUrl(url, username, password, now, end)))
+    await Promise.all(urls.map((url) => fetchCalendarUrl(url, username, password, now, end, timeZone)))
   )
     .flat()
     .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
@@ -195,8 +261,9 @@ const loadCalendar = async (): Promise<FastmailSection['calendar']> => {
   };
 };
 
-export const getFastmail = async (): Promise<FastmailSection> => {
-  const calendar = await cached('fastmail-calendar', 90_000, loadCalendar).catch((error) => ({
+export const getFastmail = async (requestedTimeZone?: string): Promise<FastmailSection> => {
+  const timeZone = normalizeTimeZone(requestedTimeZone);
+  const calendar = await cached(`fastmail-calendar:${timeZone}`, 90_000, () => loadCalendar(timeZone)).catch((error) => ({
       ...errorMeta(error, 'Fastmail calendar is unavailable.'),
       events: []
     }));

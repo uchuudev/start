@@ -40,11 +40,11 @@ export const formatDuration = (seconds: number): string => {
   return `${minutes}m`;
 };
 
-export const formatDateTime = (iso: string, timeZone = 'Europe/London'): string =>
+export const formatDateTime = (iso: string, timeZone?: string): string =>
   new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'medium',
     timeStyle: 'short',
-    timeZone
+    ...(timeZone ? { timeZone } : {})
   }).format(new Date(iso));
 
 export const formatRelative = (iso: string): string => {
